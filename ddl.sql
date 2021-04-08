@@ -27,6 +27,21 @@ create table test(
     foreign key (lab_id) references laboratory(id)
 ) ;
 
+create table strain(
+        strain_id                char(9)         not null,
+        strainname               varchar(30)     not null,
+    primary key (strain_id)
+) ;
+
+create table had(
+        strainid                char(9)             not null,
+        patientid               char(9)             not null,
+    	duration		varchar(10)	    not null,
+    	dateofdiseasestart	DATE		    not null,
+    foreign key (strainid) REFERENCES strain(strain_id),
+    foreign key (patientid) REFERENCES patient(ssn)
+) ;
+
 INSERT INTO patient
 (fname, lname, ssn, dob, address, sex)
 values
@@ -57,4 +72,17 @@ values
 ('783472635', '2020-12-30', 'negative', '453453453', '365196362'),
 ('337518761', '2020-05-05', 'negative', '666884444', '532930356');
 
+INSERT INTO strain
+(strain_id, strainname)
+values
+('836495021', 'SARS-CoV-2'),
+('643281380', 'SARS-CoV'),
+('928471742', 'MERS-CoV');
 
+
+INSERT INTO had
+(strainid, patientid, duration, dateofdiseasestart)
+values
+('836495021', '888665555', '3 days', '03/29/2021'),
+('643281380','333445555',  '5 days', '03/27/2021'), 
+('928471742', '888665555', '3 days', '03/29/2021');
