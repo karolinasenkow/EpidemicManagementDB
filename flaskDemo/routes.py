@@ -258,7 +258,7 @@ def update_test(id):
     form = TestUpdateForm()
     if form.validate_on_submit():          # notice we are are not passing the dnumber from the form
         if currentTest !=form.result.data:
-            test.result=test.result.data
+            test.result=form.result.data
         test.date=form.date.data
         test.p_ssn=form.p_ssn.data
         test.lab_id=form.lab_id.data

@@ -3,9 +3,8 @@
     {% for row in outString %}
         <article class="media content-section">
           <div class="media-body">
-            <div class="article-metadata">
-              <a class="mr-2" href="#">{{ row }}</a>		  
-              <small class="text-muted">{{ row['id'] }}  {{ row['result'] }}</small>		  
+            <div class="article-metadata">	  
+              <small class="text-muted">Test ID:{{ row['id'] }};  Date:{{ row['date'] }}</small>		  
             </div>
 			<h2><a class="article-title" href="{{ url_for('test', id=row.id) }}">{{ row.result }}</a></h2>
            
