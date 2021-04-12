@@ -24,4 +24,20 @@
 			<h2><a class="article-title" href="{{ url_for('test_home') }}">View Tests</a></h2>
           </div>
         </article>
+		<article class="media content-section">
+          <div class="media-body">
+            <div class="article-metadata">
+              <a class="mr-2" href="#">Symptom Info</a>		  		  
+            </div>
+			<h2><a class="article-title" href="{{ url_for('symptom_home') }}">View Symptoms</a></h2>
+          </div>
+        </article>
+		<article class="media content-section">
+          <div class="media-body">
+            <div class="article-metadata">
+              <a class="mr-2" href="#">Treatment Info</a>		  		  
+            </div>
+			<h2><a class="article-title" href="{{ url_for('treatment_home') }}">View Treatments</a></h2>
+          </div>
+        </article>
 {% endblock content %}

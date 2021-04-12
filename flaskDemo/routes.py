@@ -3,7 +3,7 @@ import secrets
 from PIL import Image
 from flask import render_template, url_for, flash, redirect, request, abort
 from flaskDemo import app, db, bcrypt
-from flaskDemo.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, PatientForm, LabForm, TestForm, PatientUpdateForm, LabUpdateForm, TestUpdateForm
+from flaskDemo.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, PatientForm, LabForm, TestForm, PatientUpdateForm, LabUpdateForm, TestUpdateForm, SymptomForm, TreatmentForm, TreatmentUpdateForm
 from flaskDemo.models import User, Post, Patient, Test, Laboratory, Symptom, Treatment
 from flask_login import login_user, current_user, logout_user, login_required
 from datetime import datetime
@@ -43,7 +43,19 @@ def lab_home():
 @app.route("/home/test")
 def test_home():
     posts = Test.query.all()
-    return render_template('test_home.html', title='Home',outString=posts) 
+    return render_template('test_home.html', title='Home',outString=posts)
+
+@app.route("/")
+@app.route("/home/symptom")
+def symptom_home():
+    posts = Symptom.query.all()
+    return render_template('symptom_home.html', title='Home',outString=posts)
+
+@app.route("/")
+@app.route("/home/treatment")
+def treatment_home():
+    posts = Treatment.query.all()
+    return render_template('treatment_home.html', title='Home',outString=posts) 
 
 
 @app.route("/about")
@@ -275,7 +287,6 @@ def update_test(id):
     return render_template('create_test.html', title='Update Test',
                            form=form, legend='Update Test')
 
-
 @app.route("/test/<id>/delete", methods=['POST'])
 @login_required
 def delete_test(id):
@@ -284,5 +295,75 @@ def delete_test(id):
     db.session.commit()
     flash('The test has been deleted!', 'success')
     return redirect(url_for('home'))
+
+@app.route("/")
+@app.route("/symptom/new", methods=['GET', 'POST'])
+@login_required
+def new_symptom():
+    form = SymptomForm()
+    if form.validate_on_submit():
+        symptom = Symptom(s_id=form.s_id.data, s_name=form.s_name.data)
+        db.session.add(symptom)
+        db.session.commit()
+        flash('You have added a new symptom!', 'success')
+        return redirect(url_for('home'))
+    return render_template('create_symptom.html', title='New Symptom',
+                           form=form, legend='New Symptom')
+
+@app.route("/")
+@app.route("/treatment/new", methods=['GET', 'POST'])
+@login_required
+def new_treatment():
+    form = TreatmentForm()
+    if form.validate_on_submit():
+        treatment = Treatment(t_id=form.t_id.data, t_name = form.t_name.data, s_id = form.s_id.data, p_ssn=form.p_ssn.data)
+        db.session.add(treatment)
+        db.session.commit()
+        flash('You have added a new treatment!', 'success')
+        return redirect(url_for('home'))
+    return render_template('create_treatment.html', title='New Treatment',
+                           form=form, legend='New Treatment')
+
+@app.route("/treatment/<t_id>")
+@login_required
+def treatment(t_id):
+    treatment = Treatment.query.get_or_404(t_id)
+    return render_template('treatment.html', title=treatment.t_id, treatment=treatment, now=datetime.utcnow())
+
+@app.route("/treatment/<t_id>/update", methods=['GET', 'POST'])
+@login_required
+def update_treatment(t_id):
+    treatment = Treatment.query.get_or_404(t_id)
+    currentTreatment = treatment.t_name
+
+    form = TreatmentUpdateForm()
+    if form.validate_on_submit():          # notice we are are not passing the dnumber from the form
+        if currentTreatment !=form.t_name.data:
+            treatment.t_name=form.t_name.data
+        treatment.s_id=form.s_id.data
+        treatment.p_ssn=form.p_ssn.data
+        db.session.commit()
+        flash('Treatment has been updated!', 'success')
+        return redirect(url_for('treatment', t_id=t_id))
+    elif request.method == 'GET':              # notice we are not passing the dnumber to the form
+
+        form.p_ssn.data = treatment.p_ssn
+        form.t_name.data = treatment.t_name
+        form.s_id.data = treatment.s_id
+        form.t_id.data = treatment.t_id
+       
+    return render_template('create_treatment.html', title='Update Treatment',
+                           form=form, legend='Update Treatment')
+
+@app.route("/treatment/<t_id>/delete", methods=['POST'])
+@login_required
+def delete_treatment(t_id):
+    treatment = Treatment.query.get_or_404(t_id)
+    db.session.delete(treatment)
+    db.session.commit()
+    flash('The treatment has been deleted!', 'success')
+    return redirect(url_for('home'))
+
+
 
 
