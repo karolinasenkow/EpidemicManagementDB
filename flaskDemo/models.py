@@ -55,6 +55,17 @@ class Symptom(db.Model):
 class Treatment(db.Model):
     __table__ = db.Model.metadata.tables['treatment']
 
+
+class Strain(db.Model):
+    __table__ = db.Model.metadata.tables['strain']
+
+class hadDisease(db.Model):
+    __table__ = db.Model.metadata.tables['had disease']
+
+
+
+
+
 # used for query_factory
 def getPatient(columns=None):
     u = Patient.query
@@ -65,7 +76,6 @@ def getPatient(columns=None):
 '''
 def getDepartmentFactory(columns=None):
     return partial(getDepartment, columns=columns)
-
 class Dept_Locations(db.Model):
     __table__ = db.Model.metadata.tables['dept_locations']
     
@@ -76,7 +86,3 @@ class Project(db.Model):
 class Works_On(db.Model):
     __table__ = db.Model.metadata.tables['works_on'] '''
 
-
-    
-
-  
