@@ -5,15 +5,25 @@ from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextA
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError,Regexp
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from flaskDemo import db
+
 from flaskDemo.models import User, Post, Patient, Laboratory, Test, Symptom, Treatment, Strain, HadDisease
+
+from flaskDemo.models import User, Post, Patient, Laboratory, Test, Symptom, Treatment
+
 from wtforms.fields.html5 import DateField
 
 test_result = Test.query.with_entities(Test.result).distinct()
 patient_ssn = Patient.query.with_entities(Patient.ssn).distinct()
 lab_id = Laboratory.query.with_entities(Laboratory.id).distinct()
+
 symptom_id = Symptom.query.with_entities(Symptom.s_id).distinct()
 treatment_id = Treatment.query.with_entities(Treatment.t_id).distinct()
 strain_id = Strain.query.with_entities(Strain.strainid).distinct()
+
+sex = Patient.query.with_entities(Patient.sex).distinct()
+symptom_id = Symptom.query.with_entities(Symptom.s_id).distinct()
+treatment_id = Treatment.query.with_entities(Treatment.t_id).distinct()
+
 #  or could have used ssns = db.session.query(Department.mgr_ssn).distinct()
 # for that way, we would have imported db from flaskDemo, see above
 
@@ -39,6 +49,15 @@ for row in lab_id:
     rowDict=row._asdict()
     l_results.append(rowDict)
 lab_choice = [(row['id'],row['id']) for row in l_results]
+
+
+# sex choices (select field)
+s_results=list()
+for row in sex:
+    rowDict=row._asdict()
+    s_results.append(rowDict)
+sex_choice = [(row['sex'],row['sex']) for row in s_results]
+
 
 #sympotm choices (select field)
 s_results = list()
@@ -115,6 +134,32 @@ class PostForm(FlaskForm):
     submit = SubmitField('Post')
 
 
+
+class PatientForm(FlaskForm):
+    ssn=IntegerField('Social Security Number', validators=[DataRequired()])
+    name=StringField('Name', validators=[DataRequired()])
+    dob=DateField('Date of Birth', validators=[DataRequired()])
+    address=StringField('Address', validators=[DataRequired()])
+    sex=SelectField('Sex', choices=sex_choice)
+    submit = SubmitField('Add this patient.')
+
+class LabForm(FlaskForm):
+    id=IntegerField('Lab ID', validators=[DataRequired()])
+    name=StringField('Name', validators=[DataRequired()])
+    location=StringField('Location', validators=[DataRequired()])
+    submit = SubmitField('Add this laboratory.')
+
+class TestForm(FlaskForm):
+    id=IntegerField('Test ID', validators=[DataRequired()])
+    date=DateField('Test Date', validators=[DataRequired()])
+    result=SelectField('Test Result', choices=test_Choices)
+    p_ssn = SelectField('Patient SSN', choices=patient_choice)
+    lab_id = SelectField('Lab ID', choices=lab_choice)
+    submit = SubmitField('Add this test.')
+
+class PatientUpdateForm(FlaskForm):
+
+
 class PatientForm(FlaskForm):
     ssn=IntegerField('Social Security Number', validators=[DataRequired()])
     name=StringField('Name', validators=[DataRequired()])
@@ -162,13 +207,85 @@ class HadDiseaseForm(FlaskForm):
 '''    
 class DeptUpdateForm(FlaskForm):
 #    dnumber=IntegerField('Department Number', validators=[DataRequired()])
+
     dnumber = HiddenField("")
     dname=StringField('Department Name:', validators=[DataRequired(),Length(max=15)])
+
+    ssn = HiddenField("")
+
+    name=StringField('Patient Name:', validators=[DataRequired(),Length(max=30)])
+
 #  Commented out using a text field, validated with a Regexp.  That also works, but a hassle to enter ssn.
 #    mgr_ssn = StringField("Manager's SSN", validators=[DataRequired(),Regexp('^(?!000|666)[0-8][0-9]{2}(?!00)[0-9]{2}(?!0000)[0-9]{4}$', message="Please enter 9 digits for a social security.")])
 #  One of many ways to use SelectField or QuerySelectField.  Lots of issues using those fields!!
-    mgr_ssn = SelectField("Manager's SSN", choices=myChoices)  # myChoices defined at top
+    address = StringField("Address", validators=[DataRequired(),Length(max=30)])  # myChoices defined at top
+    sex = SelectField("Sex", choices=sex_choice)
+    dob = DateField("Date of Birth:", format='%Y-%m-%d')  # This is using the html5 date picker (imported)
+    submit = SubmitField('Update this patient')
+
+# got rid of def validate_dnumber
+
+    def validate_ssn(self, ssn):    # apparently in the company DB, dname is specified as unique
+         patient = Patient.query.filter_by(ssn=ssn.data).first()
+         if patient and (str(patient.ssn) != str(self.ssn.data)):
+             raise ValidationError('That patient name is already being used. Please choose a different name.')
+
+class PatientForm(PatientUpdateForm):
+
+    ssn=IntegerField('Social Security Number', validators=[DataRequired()])
+    submit = SubmitField('Add this patient.')
+
+    def validate_ssn(self, ssn):    #because dnumber is primary key and should be unique
+        patient = Patient.query.filter_by(ssn=ssn.data).first()
+        if patient:
+            raise ValidationError('That patient number is taken. Please choose a different one.')
+
+class LabUpdateForm(FlaskForm):
+
+#    dnumber=IntegerField('Department Number', validators=[DataRequired()])
+    id = HiddenField("")
+
+    name=StringField('Laboratory Name:', validators=[DataRequired(),Length(max=30)])
+#  Commented out using a text field, validated with a Regexp.  That also works, but a hassle to enter ssn.
+#    mgr_ssn = StringField("Manager's SSN", validators=[DataRequired(),Regexp('^(?!000|666)[0-8][0-9]{2}(?!00)[0-9]{2}(?!0000)[0-9]{4}$', message="Please enter 9 digits for a social security.")])
+
+    location = StringField("Location", validators=[DataRequired(),Length(max=30)])
+    submit = SubmitField('Update this laboratory')
     
+
+# got rid of def validate_dnumber
+
+    def validate_id(self, id):    # apparently in the company DB, dname is specified as unique
+         lab = Laboratory.query.filter_by(id=id.data).first()
+         if lab and (str(lab.id) != str(self.id.data)):
+             raise ValidationError('That laboratory name is already being used. Please choose a different name.')
+
+
+class LabForm(LabUpdateForm):
+
+    id=IntegerField('ID', validators=[DataRequired()])
+    submit = SubmitField('Add this laboratory.')
+
+    def validate_id(self, id):    #because dnumber is primary key and should be unique
+        lab = Laboratory.query.filter_by(id=id.data).first()
+        if lab:
+            raise ValidationError('That laboratory number is taken. Please choose a different one.')
+
+class TestUpdateForm(FlaskForm):
+
+#    dnumber=IntegerField('Department Number', validators=[DataRequired()])
+    id = HiddenField("")
+
+    date=DateField('Test Date', validators=[DataRequired()])
+#  Commented out using a text field, validated with a Regexp.  That also works, but a hassle to enter ssn.
+#    mgr_ssn = StringField("Manager's SSN", validators=[DataRequired(),Regexp('^(?!000|666)[0-8][0-9]{2}(?!00)[0-9]{2}(?!0000)[0-9]{4}$', message="Please enter 9 digits for a social security.")])
+
+    result=SelectField('Test Result', choices=test_Choices)
+    p_ssn = SelectField('Patient SSN', choices=patient_choice)
+    lab_id = SelectField('Lab ID', choices=lab_choice)
+    submit = SubmitField('Update this test')
+    
+
 # the regexp works, and even gives an error message
 #    mgr_start=DateField("Manager's Start Date:  yyyy-mm-dd",validators=[Regexp(regex)])
 #    mgr_start = DateField("Manager's Start Date")
@@ -188,3 +305,66 @@ class DeptForm(DeptUpdateForm):
         if dept:
             raise ValidationError('That department number is taken. Please choose a different one.')
             '''
+
+
+# got rid of def validate_dnumber
+
+    def validate_id(self, id):    # apparently in the company DB, dname is specified as unique
+         test = Test.query.filter_by(id=id.data).first()
+         if test and (str(test.id) != str(self.id.data)):
+             raise ValidationError('That test name is already being used. Please choose a different name.')
+
+
+class LabForm(LabUpdateForm):
+
+    id=IntegerField('ID', validators=[DataRequired()])
+    submit = SubmitField('Add this test.')
+
+    def validate_id(self, id):    #because dnumber is primary key and should be unique
+        test = Test.query.filter_by(id=id.data).first()
+        if test:
+            raise ValidationError('That test number is taken. Please choose a different one.')
+
+class SymptomForm(FlaskForm):
+    s_id=IntegerField('Symptom ID', validators=[DataRequired()])
+    s_name=StringField('Symptom Name', validators=[DataRequired()])
+    submit = SubmitField('Add this test.')
+
+class TreatmentForm(FlaskForm):
+    t_id=IntegerField('Treatment ID', validators=[DataRequired()])
+    t_name =StringField('Treatment Name', validators=[DataRequired()])
+    s_id = SelectField('Symptom ID', choices=symptom_choice)
+    p_ssn = SelectField('Patient SSN', choices=patient_choice)
+    submit = SubmitField('Add this test.')
+
+class TreatmentUpdateForm(FlaskForm):
+
+#    dnumber=IntegerField('Department Number', validators=[DataRequired()])
+    t_id = HiddenField("")
+
+    t_name=StringField('Treatment Name:', validators=[DataRequired(),Length(max=30)])
+#  Commented out using a text field, validated with a Regexp.  That also works, but a hassle to enter ssn.
+#    mgr_ssn = StringField("Manager's SSN", validators=[DataRequired(),Regexp('^(?!000|666)[0-8][0-9]{2}(?!00)[0-9]{2}(?!0000)[0-9]{4}$', message="Please enter 9 digits for a social security.")])
+
+#  One of many ways to use SelectField or QuerySelectField.  Lots of issues using those fields!!
+    p_ssn = SelectField('Patient SSN', choices=patient_choice)
+    s_id = SelectField('Symptom ID', choices=symptom_choice)
+    submit = SubmitField('Update this treatment.')
+
+# got rid of def validate_dnumber
+
+    def validate_id(self, t_id):    # apparently in the company DB, dname is specified as unique
+         treatment = Treatment.query.filter_by(t_id=t_id.data).first()
+         if treatment and (str(treatment.t_id) != str(self.t_id.data)):
+             raise ValidationError('That Treatment already being exists. Please choose a different entry.')
+
+class TreatmentForm(TreatmentUpdateForm):
+
+    t_id=IntegerField('Treatment ID', validators=[DataRequired()])
+    submit = SubmitField('Add this Treatment.')
+
+    def validate_id(self, t_id):
+        treatment = Treatment.query.filter_by(t_id=t_id.data).first()
+        if treatment:
+            raise ValidationError('That treatment id already exists. Please try another entry')
+            

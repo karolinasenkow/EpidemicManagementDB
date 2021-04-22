@@ -55,11 +55,13 @@ class Symptom(db.Model):
 class Treatment(db.Model):
     __table__ = db.Model.metadata.tables['treatment']
 
+
 class Strain(db.Model):
     __table__ = db.Model.metadata.tables['strain']
 
 class hadDisease(db.Model):
     __table__ = db.Model.metadata.tables['had disease']
+
 
 
 
@@ -83,3 +85,4 @@ class Project(db.Model):
     __table__ = db.Model.metadata.tables['project']
 class Works_On(db.Model):
     __table__ = db.Model.metadata.tables['works_on'] '''
+
