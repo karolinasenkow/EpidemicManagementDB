@@ -4,9 +4,9 @@
         <article class="media content-section">
           <div class="media-body">
             <div class="article-metadata">	  
-              <small class="text-muted">Test ID:{{ row['id'] }};  Date:{{ row['date'] }}</small>		  
+              <small class="text-muted">Patient SSN: {{row.p_ssn}} // Test ID: {{ row['id'] }} // Date: {{ row['date'] }}</small>		  
             </div>
-			<h2><a class="article-title" href="{{ url_for('test', id=row.id) }}">{{ row.result }}</a></h2>
+			<h2><a class="article-title" href="{{ url_for('test', id=row.id) }}"> Result: {{ row.result }}</a></h2>
            
           </div>
         </article>

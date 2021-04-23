@@ -140,11 +140,15 @@ def account():
 def new_patient():
     form = PatientForm()
     if form.validate_on_submit():
+        if form.picture.data:
+            picture_file = save_picture(form.picture.data)
+            patient.image_file = picture_file
         patient = Patient(ssn=form.ssn.data, name=form.name.data,dob=form.dob.data,address=form.address.data,sex=form.sex.data)
         db.session.add(patient)
         db.session.commit()
         flash('You have added a new patient!', 'success')
         return redirect(url_for('home'))
+    image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
     return render_template('create_patient.html', title='New Patient',
                            form=form, legend='New Patient')
 
@@ -162,6 +166,9 @@ def update_patient(ssn):
 
     form = PatientUpdateForm()
     if form.validate_on_submit():          # notice we are are not passing the dnumber from the form
+        if form.picture.data:
+            picture_file = save_picture(form.picture.data)
+            patient.image_file = picture_file
         if currentPatient !=form.name.data:
             patient.name=form.name.data
         patient.dob=form.dob.data
@@ -177,6 +184,7 @@ def update_patient(ssn):
         form.dob.data = patient.dob
         form.address.data = patient.address
         form.sex.data = patient.sex
+    image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
     return render_template('create_patient.html', title='Update Patient',
                            form=form, legend='Update Patient')
 

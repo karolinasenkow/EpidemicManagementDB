@@ -123,7 +123,8 @@ class PostForm(FlaskForm):
 
 
 class PatientForm(FlaskForm):
-    ssn=IntegerField('Social Security Number', validators=[DataRequired()])
+    ssn=IntegerField('Social Security Number', validators=[DataRequired(),Regexp('^(?!000|666)[0-8][0-9]{2}(?!00)[0-9]{2}(?!0000)[0-9]{4}$', message="Please enter 9 digits for a social security.")])
+    picture = FileField('Profile Picture', validators=[FileAllowed(['jpg', 'png'])])
     name=StringField('Name', validators=[DataRequired()])
     dob=DateField('Date of Birth', validators=[DataRequired()])
     address=StringField('Address', validators=[DataRequired()])
@@ -148,7 +149,7 @@ class PatientUpdateForm(FlaskForm):
 
 #    dnumber=IntegerField('Department Number', validators=[DataRequired()])
     ssn = HiddenField("")
-
+    picture = FileField('Profile Picture', validators=[FileAllowed(['jpg', 'png'])])
     name=StringField('Patient Name:', validators=[DataRequired(),Length(max=30)])
 #  Commented out using a text field, validated with a Regexp.  That also works, but a hassle to enter ssn.
 #    mgr_ssn = StringField("Manager's SSN", validators=[DataRequired(),Regexp('^(?!000|666)[0-8][0-9]{2}(?!00)[0-9]{2}(?!0000)[0-9]{4}$', message="Please enter 9 digits for a social security.")])
