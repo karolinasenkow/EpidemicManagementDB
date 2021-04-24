@@ -36,10 +36,6 @@ class Post(db.Model):
          return f"Post('{self.title}', '{self.date_posted}')"
 
 
-
-
-
-
 class Patient(db.Model):
     __table__ = db.Model.metadata.tables['patient']
     
@@ -47,6 +43,12 @@ class Laboratory(db.Model):
     __table__ = db.Model.metadata.tables['laboratory']
 
 class Test(db.Model):
+    # __table_args__ = {'extend_existing': True}
+    # id = db.Column(db.Integer, primary_key=True)
+    # result = db.Column(db.String(100), nullable=False)
+    # date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    # lab_id = db.Column(db.Integer, db.ForeignKey('laboratory.id'), nullable=False)
+    # p_ssn = db.Column(db.Integer, db.ForeignKey('patient.ssn'), nullable=False)
     __table__ = db.Model.metadata.tables['test']
 
 class Symptom(db.Model):
