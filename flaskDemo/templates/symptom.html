@@ -1,17 +1,17 @@
 {% extends "layout.html" %}
 {% block content %}
   <article class="media content-section">
-    <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/default.jpg')}}">
+<!--    <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/default.jpg')}}"> -->
     <div class="media-body">
       <div class="article-metadata">
-	    <h2><a class="article-title" href="#">{{patient.name}} - {{ patient.ssn }}</a></h2>
+        <a class="mr-2" href="#">{{ symptom.s_id }}</a>
         <small class="text-muted">{{now.strftime('%A %B, %d %Y %H:%M:%S')}}</small>
 
           <div>
-            <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('update_patient', ssn=patient.ssn) }}">Update</a>
+            <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('update_symptom', s_id=symptom.s_id) }}">Update</a>
             <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal">Delete</button>
           </div>
- 
+
       </div>
 
     </div>
@@ -21,14 +21,14 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="deleteModalLabel">Delete Patient?</h5>
+          <h5 class="modal-title" id="deleteModalLabel">Delete Symptom?</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <form action="{{ url_for('delete_patient', ssn=patient.ssn) }}" method="POST">
+          <form action="{{ url_for('delete_symptom', s_id=symptom.s_id) }}" method="POST">
             <input class="btn btn-danger" type="submit" value="Delete">
           </form>
         </div>

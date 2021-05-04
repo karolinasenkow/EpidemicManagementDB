@@ -317,6 +317,47 @@ def new_symptom():
         return redirect(url_for('home'))
     return render_template('create_symptom.html', title='New Symptom',
                            form=form, legend='New Symptom')
+###########################################
+@app.route("/symptom/<s_id>")
+@login_required
+def symptom(s_id):
+    symptom = Symptom.query.get_or_404(s_id)
+    return render_template('symptom.html', title=symptom.s_id, symptom=symptom, now=datetime.utcnow())
+
+@app.route("/symptom/<s_id>/update", methods=['GET', 'POST'])
+@login_required
+def update_symptom(s_id):
+
+    symptom = Symptom.query.get_or_404(s_id)
+    treatment = Symptom.query.get_or_404(symptom.t_id)
+    currentSymptom = symptom.s_name
+
+    form = SymptomUpdateForm()
+    if form.validate_on_submit():          # notice we are are not passing the dnumber from the form
+        if currentSymptom !=form.s_name.data:
+            symptom.s_name=form.s_name.data
+            symptom.t_id = form.t_id.data
+        
+        db.session.commit()
+        flash('Symptom has been updated!', 'success')
+        return redirect(url_for('symptom', s_id=symptom.s_id))
+    elif request.method == 'GET':              # notice we are not passing the dnumber to the form
+        form.s_id.data = symptom.s_id
+        form.s_name.data = symptom.s_name
+  
+    return render_template('create_symptom.html', title='Update Symptom',
+                           form=form, legend='Update Symptom')
+
+@app.route("/symptom/<s_id>/delete", methods=['POST'])
+@login_required
+def delete_symptom(s_id):
+    symptom = Symptom.query.get_or_404(s_id)
+    db.session.delete(symptom)
+    db.session.commit()
+    flash('The symptom has been deleted!', 'success')
+    return redirect(url_for('home'))
+
+#########################################
 
 @app.route("/")
 @app.route("/treatment/new", methods=['GET', 'POST'])
@@ -341,23 +382,23 @@ def treatment(t_id):
 @app.route("/treatment/<t_id>/update", methods=['GET', 'POST'])
 @login_required
 def update_treatment(t_id):
+
     treatment = Treatment.query.get_or_404(t_id)
+    patient = Patient.query.get_or_404(treatment.p_ssn)
     currentTreatment = treatment.t_name
 
     form = TreatmentUpdateForm()
     if form.validate_on_submit():          # notice we are are not passing the dnumber from the form
         if currentTreatment !=form.t_name.data:
             treatment.t_name=form.t_name.data
-        treatment.s_id=form.s_id.data
-        treatment.p_ssn=form.p_ssn.data
+            treatment.p_ssn = form.p_ssn.data
+        
         db.session.commit()
         flash('Treatment has been updated!', 'success')
-        return redirect(url_for('treatment', t_id=t_id))
+        return redirect(url_for('treatment', t_id=treatment.t_id))
     elif request.method == 'GET':              # notice we are not passing the dnumber to the form
-
         form.p_ssn.data = treatment.p_ssn
         form.t_name.data = treatment.t_name
-        form.s_id.data = treatment.s_id
         form.t_id.data = treatment.t_id
        
     return render_template('create_treatment.html', title='Update Treatment',
