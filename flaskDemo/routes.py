@@ -7,7 +7,7 @@ from flaskDemo.forms import RegistrationForm, LoginForm, UpdateAccountForm, Post
 from flaskDemo.models import User, Post, Patient, Test, Laboratory, Symptom, Treatment
 from flask_login import login_user, current_user, logout_user, login_required
 from datetime import datetime
-
+from sqlalchemy import and_
 
 
 '''def home():
@@ -357,7 +357,7 @@ def new_symptom():
         return redirect(url_for('home'))
     return render_template('create_symptom.html', title='New Symptom',
                            form=form, legend='New Symptom')
-###########################################
+
 @app.route("/symptom/<s_id>")
 @login_required
 def symptom(s_id):
@@ -415,8 +415,19 @@ def new_treatment():
 @app.route("/treatment/<t_id>")
 @login_required
 def treatment(t_id):
+    # inner join: return treatment for each symptom
     treatment = Treatment.query.get_or_404(t_id)
-    return render_template('treatment.html', title=treatment.t_id, treatment=treatment, now=datetime.utcnow())
+    result = Treatment.query.join(Symptom, Treatment.s_id == Symptom.s_id) \
+    .add_columns(Treatment.t_name, Symptom.s_name) \
+    .filter(Treatment.s_id == Symptom.s_id).group_by(Treatment.t_name)
+    cursor = db.session.execute(result)
+    row = ''
+    returnString = str(row)
+    row = cursor.fetchone()
+    while row is not None:
+        returnString += "\n{" + str(row[2]) + ':\n' + str(row[4]) + '}'
+        row = cursor.fetchone()
+    return render_template('treatment.html', title=treatment.t_id, returnString=returnString, treatment=treatment, now=datetime.utcnow())
 
 @app.route("/treatment/<t_id>/update", methods=['GET', 'POST'])
 @login_required
