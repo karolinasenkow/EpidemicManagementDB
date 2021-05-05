@@ -3,7 +3,7 @@ import secrets
 from PIL import Image
 from flask import render_template, url_for, flash, redirect, request, abort
 from flaskDemo import app, db, bcrypt
-from flaskDemo.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, PatientForm, LabForm, TestForm, PatientUpdateForm, LabUpdateForm, TestUpdateForm, SymptomForm, TreatmentForm, TreatmentUpdateForm
+from flaskDemo.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, PatientForm, LabForm, TestForm, PatientUpdateForm, LabUpdateForm, TestUpdateForm, SymptomForm, TreatmentForm, TreatmentUpdateForm, SymptomUpdateForm
 from flaskDemo.models import User, Post, Patient, Test, Laboratory, Symptom, Treatment
 from flask_login import login_user, current_user, logout_user, login_required
 from datetime import datetime
@@ -192,6 +192,8 @@ def update_patient(ssn):
 @login_required
 def delete_patient(ssn):
     patient = Patient.query.get_or_404(ssn)
+    flash('You cannot delete a patient. Reassign patient for test before deleting.', 'danger')
+    return redirect(url_for('test_home', id=id))
     db.session.delete(patient)
     db.session.commit()
     flash('The patient has been deleted!', 'success')
@@ -230,7 +232,7 @@ def update_lab(id):
         lab.location=form.location.data
         db.session.commit()
         flash('Your laboratory has been updated!', 'success')
-        return redirect(url_for('lab', id=id))
+        return redirect(url_for('lab_home', id=id))
     elif request.method == 'GET':              # notice we are not passing the dnumber to the form
 
         form.id.data = lab.id
@@ -243,6 +245,8 @@ def update_lab(id):
 @login_required
 def delete_lab(id):
     lab = Laboratory.query.get_or_404(id)
+    flash('You cannot delete a laboratory. Reassign lab for test before deleting.', 'danger')
+    return redirect(url_for('test_home', id=id))
     db.session.delete(lab)
     db.session.commit()
     flash('The laboratory has been deleted!', 'success')
@@ -329,18 +333,18 @@ def symptom(s_id):
 def update_symptom(s_id):
 
     symptom = Symptom.query.get_or_404(s_id)
-    treatment = Symptom.query.get_or_404(symptom.t_id)
+    # treatment = Symptom.query.get_or_404(symptom.t_id)
     currentSymptom = symptom.s_name
 
     form = SymptomUpdateForm()
     if form.validate_on_submit():          # notice we are are not passing the dnumber from the form
         if currentSymptom !=form.s_name.data:
             symptom.s_name=form.s_name.data
-            symptom.t_id = form.t_id.data
+            symptom.s_id = form.s_id.data
         
         db.session.commit()
         flash('Symptom has been updated!', 'success')
-        return redirect(url_for('symptom', s_id=symptom.s_id))
+        return redirect(url_for('symptom_home', s_id=symptom.s_id))
     elif request.method == 'GET':              # notice we are not passing the dnumber to the form
         form.s_id.data = symptom.s_id
         form.s_name.data = symptom.s_name
@@ -355,7 +359,7 @@ def delete_symptom(s_id):
     db.session.delete(symptom)
     db.session.commit()
     flash('The symptom has been deleted!', 'success')
-    return redirect(url_for('home'))
+    return redirect(url_for('symptom_home'))
 
 #########################################
 
@@ -365,7 +369,7 @@ def delete_symptom(s_id):
 def new_treatment():
     form = TreatmentForm()
     if form.validate_on_submit():
-        treatment = Treatment(t_id=form.t_id.data, t_name = form.t_name.data, s_id = form.s_id.data, p_ssn=form.p_ssn.data)
+        treatment = Treatment(t_id=form.t_id.data, s_id = form.s_id.data, t_name = form.t_name.data, p_ssn=form.p_ssn.data)
         db.session.add(treatment)
         db.session.commit()
         flash('You have added a new treatment!', 'success')
