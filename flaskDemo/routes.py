@@ -30,13 +30,22 @@ def home():
 @app.route("/")
 @app.route("/home/patient")
 def patient_home():
+    # subquery: return patients that are negative
+    sql_query = "SELECT patient.name FROM patient WHERE ssn IN (SELECT p_ssn FROM Test WHERE test.result = 'negative');"
+    cursor = db.session.execute(sql_query)
+    row = ''
+    returnString = str(row)
+    row = cursor.fetchone()
+    while row is not None:
+        returnString += "\n" + str(row)
+        row = cursor.fetchone()
     posts = Patient.query.all()
-    return render_template('patient_home.html', title='Home',outString=posts)
+    return render_template('patient_home.html', title='Home', returnString=returnString, outString=posts)
 
 @app.route("/")
 @app.route("/home/lab")
 def lab_home():
-    # return number of tests for each lab
+    # aggregate: return number of tests for each lab
     sql_query = "SELECT laboratory.name, COUNT(test.id) FROM Test, Laboratory WHERE test.lab_id = laboratory.id GROUP BY laboratory.name;"
     cursor = db.session.execute(sql_query)
     row = ''
@@ -46,7 +55,6 @@ def lab_home():
         returnString += "\n" + str(row)
         row = cursor.fetchone()
     posts = Laboratory.query.all()
-    # return render_template('lab_home.html', title='Home', test_num=test_num, outString=posts)
     return render_template('lab_home.html', title='Home', returnString=returnString, outString=posts)
 
 @app.route("/")
@@ -58,14 +66,32 @@ def test_home():
 @app.route("/")
 @app.route("/home/symptom")
 def symptom_home():
+    # left join: return treatment for each symptom
+    sql_query = "SELECT treatment.t_name, symptom.s_name FROM symptom LEFT JOIN treatment on(symptom.s_id = treatment.s_id) GROUP BY treatment.t_name;"
+    cursor = db.session.execute(sql_query)
+    row = ''
+    returnString = str(row)
+    row = cursor.fetchone()
+    while row is not None:
+        returnString += "\n" + str(row)
+        row = cursor.fetchone()
     posts = Symptom.query.all()
-    return render_template('symptom_home.html', title='Home',outString=posts)
+    return render_template('symptom_home.html', title='Home',returnString=returnString, outString=posts)
 
 @app.route("/")
 @app.route("/home/treatment")
 def treatment_home():
+    # compound condition: return symptoms where treatment is nyquil
+    sql_query = "SELECT symptom.s_name FROM symptom, treatment WHERE treatment.s_id = symptom.s_id AND treatment.t_name = 'nyquil'"
+    cursor = db.session.execute(sql_query)
+    row = ''
+    returnString = str(row)
+    row = cursor.fetchone()
+    while row is not None:
+        returnString += "\n" + str(row[0])
+        row = cursor.fetchone()
     posts = Treatment.query.all()
-    return render_template('treatment_home.html', title='Home',outString=posts) 
+    return render_template('treatment_home.html', title='Home', returnString=returnString, outString=posts) 
 
 
 @app.route("/about")
@@ -227,9 +253,6 @@ def new_lab():
 @login_required
 def lab(id):
     laboratory = Laboratory.query.get_or_404(id)
-    # sql_query = "SELECT laboratory.name, COUNT(test.id) FROM Test, Laboratory WHERE test.lab_id = laboratory.id GROUP BY laboratory.name;"
-    # test_num = db.session.execute(sql_query)
-    # test_num = test_num.first()[0]
     return render_template('laboratory.html', title=laboratory.id, laboratory=laboratory, now=datetime.utcnow())
 
 @app.route("/lab/<id>/update", methods=['GET', 'POST'])
@@ -239,14 +262,14 @@ def update_lab(id):
     currentLab = lab.name
 
     form = LabUpdateForm()
-    if form.validate_on_submit():          # notice we are are not passing the dnumber from the form
+    if form.validate_on_submit():          
         if currentLab !=form.name.data:
             lab.name=form.name.data
         lab.location=form.location.data
         db.session.commit()
         flash('Your laboratory has been updated!', 'success')
         return redirect(url_for('lab_home', id=id))
-    elif request.method == 'GET':              # notice we are not passing the dnumber to the form
+    elif request.method == 'GET':              
 
         form.id.data = lab.id
         form.name.data = lab.name
@@ -293,7 +316,7 @@ def update_test(id):
     currentTest = test.result
 
     form = TestUpdateForm()
-    if form.validate_on_submit():          # notice we are are not passing the dnumber from the form
+    if form.validate_on_submit():      
         if currentTest !=form.result.data:
             test.result=form.result.data
         test.date=form.date.data
@@ -302,7 +325,7 @@ def update_test(id):
         db.session.commit()
         flash('Your test has been updated!', 'success')
         return redirect(url_for('test', id=id))
-    elif request.method == 'GET':              # notice we are not passing the dnumber to the form
+    elif request.method == 'GET':            
 
         form.id.data = test.id
         form.date.data = test.date
@@ -346,11 +369,10 @@ def symptom(s_id):
 def update_symptom(s_id):
 
     symptom = Symptom.query.get_or_404(s_id)
-    # treatment = Symptom.query.get_or_404(symptom.t_id)
     currentSymptom = symptom.s_name
 
     form = SymptomUpdateForm()
-    if form.validate_on_submit():          # notice we are are not passing the dnumber from the form
+    if form.validate_on_submit():          
         if currentSymptom !=form.s_name.data:
             symptom.s_name=form.s_name.data
             symptom.s_id = form.s_id.data
@@ -358,7 +380,7 @@ def update_symptom(s_id):
         db.session.commit()
         flash('Symptom has been updated!', 'success')
         return redirect(url_for('symptom_home', s_id=symptom.s_id))
-    elif request.method == 'GET':              # notice we are not passing the dnumber to the form
+    elif request.method == 'GET':              
         form.s_id.data = symptom.s_id
         form.s_name.data = symptom.s_name
   
@@ -374,7 +396,7 @@ def delete_symptom(s_id):
     flash('The symptom has been deleted!', 'success')
     return redirect(url_for('symptom_home'))
 
-#########################################
+
 
 @app.route("/")
 @app.route("/treatment/new", methods=['GET', 'POST'])
@@ -394,11 +416,7 @@ def new_treatment():
 @login_required
 def treatment(t_id):
     treatment = Treatment.query.get_or_404(t_id)
-    # sql_query = "SELECT COUNT(*) FROM Treatment, patient WHERE p_ssn = " + str(Patient.ssn) + ";"
-    #patient_num = db.session.execute(sql_query)
-    # patient_num = patient_num.first()[0]
-    # return render_template('treatment.html', title=treatment.t_id, treatment=treatment, patient_num=patient_num, now=datetime.utcnow())
-    return render_template('treatment.html', title=treatment.t_id, treatment=treatment, patient_num=patient_num, now=datetime.utcnow())
+    return render_template('treatment.html', title=treatment.t_id, treatment=treatment, now=datetime.utcnow())
 
 @app.route("/treatment/<t_id>/update", methods=['GET', 'POST'])
 @login_required
@@ -409,7 +427,7 @@ def update_treatment(t_id):
     currentTreatment = treatment.t_name
 
     form = TreatmentUpdateForm()
-    if form.validate_on_submit():          # notice we are are not passing the dnumber from the form
+    if form.validate_on_submit():          
         if currentTreatment !=form.t_name.data:
             treatment.t_name=form.t_name.data
             treatment.p_ssn = form.p_ssn.data
@@ -418,7 +436,7 @@ def update_treatment(t_id):
         db.session.commit()
         flash('Treatment has been updated!', 'success')
         return redirect(url_for('treatment', t_id=treatment.t_id))
-    elif request.method == 'GET':              # notice we are not passing the dnumber to the form
+    elif request.method == 'GET':              
         form.p_ssn.data = treatment.p_ssn
         form.t_name.data = treatment.t_name
         form.t_name.data = treatment.s_id
