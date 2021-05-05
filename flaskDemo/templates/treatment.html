@@ -4,8 +4,9 @@
 <!--    <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/default.jpg')}}"> -->
     <div class="media-body">
       <div class="article-metadata">
-        <a class="mr-2" href="#">{{ treatment.t_id }}</a>
+        <a class="mr-2" href="#">{{ treatment.t_name }} - {{ treatment.t_id }}</a>
         <small class="text-muted">{{now.strftime('%A %B, %d %Y %H:%M:%S')}}</small>
+		<!- <p>Size: {{patient_num}} patients</p>
 
           <div>
             <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('update_treatment', t_id=treatment.t_id) }}">Update</a>

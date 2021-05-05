@@ -54,7 +54,7 @@ t_results = list()
 for row in treatment_id:
     rowDict = row._asdict()
     t_results.append(rowDict)
-symptom_choice = [(row['t_id'], row['t_id']) for row in t_results]
+treatment_choice = [(row['t_id'], row['t_id']) for row in t_results]
 
 regex1='^((((19|20)(([02468][048])|([13579][26]))-02-29))|((20[0-9][0-9])|(19[0-9][0-9]))-((((0[1-9])'
 regex2='|(1[0-2]))-((0[1-9])|(1\d)|(2[0-8])))|((((0[13578])|(1[02]))-31)|(((0[1,3-9])|(1[0-2]))-(29|30)))))$'
@@ -226,17 +226,17 @@ class LabForm(LabUpdateForm):
 class SymptomForm(FlaskForm):
     s_id=IntegerField('Symptom ID', validators=[DataRequired()])
     s_name=StringField('Symptom Name', validators=[DataRequired()])
-    submit = SubmitField('Add this test.')
+    submit = SubmitField('Add this symptom.')
 
 class SymptomUpdateForm(FlaskForm):
 
     s_id = HiddenField("")
     s_name=StringField('Symptom Name:', validators=[DataRequired(),Length(max=30)])
-    submit = SubmitField('Update this treatment.')
+    submit = SubmitField('Update this symptom.')
 
     def validate_id(self, s_id):   
          symptom = Symptom.query.filter_by(s_id=s_id.data).first()
-         if treatment and (str(symptom.s_id) != str(self.s_id.data)):
+         if symptom and (str(symptom.s_id) != str(self.s_id.data)):
              raise ValidationError('That symptom already being exists. Please choose a different entry.')
 
 class Symptom(SymptomUpdateForm):

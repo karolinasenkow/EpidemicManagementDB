@@ -36,8 +36,18 @@ def patient_home():
 @app.route("/")
 @app.route("/home/lab")
 def lab_home():
+    # return number of tests for each lab
+    sql_query = "SELECT laboratory.name, COUNT(test.id) FROM Test, Laboratory WHERE test.lab_id = laboratory.id GROUP BY laboratory.name;"
+    cursor = db.session.execute(sql_query)
+    row = ''
+    returnString = str(row)
+    row = cursor.fetchone()
+    while row is not None:
+        returnString += "\n" + str(row)
+        row = cursor.fetchone()
     posts = Laboratory.query.all()
-    return render_template('lab_home.html', title='Home',outString=posts)
+    # return render_template('lab_home.html', title='Home', test_num=test_num, outString=posts)
+    return render_template('lab_home.html', title='Home', returnString=returnString, outString=posts)
 
 @app.route("/")
 @app.route("/home/test")
@@ -217,6 +227,9 @@ def new_lab():
 @login_required
 def lab(id):
     laboratory = Laboratory.query.get_or_404(id)
+    # sql_query = "SELECT laboratory.name, COUNT(test.id) FROM Test, Laboratory WHERE test.lab_id = laboratory.id GROUP BY laboratory.name;"
+    # test_num = db.session.execute(sql_query)
+    # test_num = test_num.first()[0]
     return render_template('laboratory.html', title=laboratory.id, laboratory=laboratory, now=datetime.utcnow())
 
 @app.route("/lab/<id>/update", methods=['GET', 'POST'])
@@ -381,7 +394,11 @@ def new_treatment():
 @login_required
 def treatment(t_id):
     treatment = Treatment.query.get_or_404(t_id)
-    return render_template('treatment.html', title=treatment.t_id, treatment=treatment, now=datetime.utcnow())
+    # sql_query = "SELECT COUNT(*) FROM Treatment, patient WHERE p_ssn = " + str(Patient.ssn) + ";"
+    #patient_num = db.session.execute(sql_query)
+    # patient_num = patient_num.first()[0]
+    # return render_template('treatment.html', title=treatment.t_id, treatment=treatment, patient_num=patient_num, now=datetime.utcnow())
+    return render_template('treatment.html', title=treatment.t_id, treatment=treatment, patient_num=patient_num, now=datetime.utcnow())
 
 @app.route("/treatment/<t_id>/update", methods=['GET', 'POST'])
 @login_required
@@ -396,6 +413,7 @@ def update_treatment(t_id):
         if currentTreatment !=form.t_name.data:
             treatment.t_name=form.t_name.data
             treatment.p_ssn = form.p_ssn.data
+            treatment.s_id = form.s_id.data
         
         db.session.commit()
         flash('Treatment has been updated!', 'success')
@@ -403,7 +421,7 @@ def update_treatment(t_id):
     elif request.method == 'GET':              # notice we are not passing the dnumber to the form
         form.p_ssn.data = treatment.p_ssn
         form.t_name.data = treatment.t_name
-        form.t_id.data = treatment.t_id
+        form.t_name.data = treatment.s_id
        
     return render_template('create_treatment.html', title='Update Treatment',
                            form=form, legend='Update Treatment')
