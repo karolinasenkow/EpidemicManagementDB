@@ -231,7 +231,7 @@ class SymptomForm(FlaskForm):
 class SymptomUpdateForm(FlaskForm):
 
     s_id = HiddenField("")
-    s_name=StringField('Symptom Name:', validators=[DataRequired(),Length(max=30)])
+    s_name=StringField('Symptom Name:', validators=[DataRequired(),Length(max=50)])
     submit = SubmitField('Update this symptom.')
 
     def validate_id(self, s_id):   
@@ -260,7 +260,7 @@ class TreatmentForm(FlaskForm):
 class TreatmentUpdateForm(FlaskForm):
 
     t_id = HiddenField("")
-    t_name=StringField('Treatment Name:', validators=[DataRequired(),Length(max=30)])
+    t_name=StringField('Treatment Name:', validators=[DataRequired(),Length(max=50)])
     p_ssn = SelectField('Patient SSN', choices=patient_choice)
     s_id = SelectField('Symptom ID', choices=symptom_choice)
     submit = SubmitField('Update this treatment.')
