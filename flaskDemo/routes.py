@@ -201,7 +201,7 @@ def update_patient(ssn):
     currentPatient = patient.name
 
     form = PatientUpdateForm()
-    if form.validate_on_submit():          # notice we are are not passing the dnumber from the form
+    if form.validate_on_submit():         
         if form.picture.data:
             picture_file = save_picture(form.picture.data)
             patient.image_file = picture_file
@@ -213,7 +213,7 @@ def update_patient(ssn):
         db.session.commit()
         flash('Your patient has been updated!', 'success')
         return redirect(url_for('patient', ssn=ssn))
-    elif request.method == 'GET':              # notice we are not passing the dnumber to the form
+    elif request.method == 'GET':           
 
         form.ssn.data = patient.ssn
         form.name.data = patient.name
